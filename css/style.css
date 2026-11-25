@@ -1737,3 +1737,11 @@ kbd {
   background: var(--red); color: #fff; font-size: 12px; font-weight: 800; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
 }
 .subject-event .subject-name, .subject-all:not(:last-child) .subject-name { font-size: clamp(20px, 3.8vmin, 30px); white-space: nowrap; }
+
+/* ランキング：期間限定イベントのタブ */
+.rank-tab.rank-tab-event { position: relative; }
+.rank-tab-tag {
+  position: absolute; top: -15px; right: -14px;
+  background: #ff4f6d; color: #fff; font-size: 10px; line-height: 1; padding: 3px 6px;
+  border: 2px solid var(--ink); border-radius: 999px; -webkit-text-stroke: 0; transform: rotate(6deg);
+}

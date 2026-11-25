@@ -7,11 +7,22 @@
   function buildTabs() {
     const wrap = $('rank-tabs');
     wrap.innerHTML = '';
-    Questions.SUBJECTS.filter((s) => !s.battleOnly).forEach((s) => {
+    const list = Questions.SUBJECTS.filter((s) => !s.battleOnly);
+    // 期間限定イベントの間は、イベントのランキングのタブも出す
+    const ev = window.HistoryEvent && HistoryEvent.isOpen() ? Questions.getSubject(HistoryEvent.EVENT.subject) : null;
+    if (ev) list.push(Object.assign({}, ev, { isEvent: true }));
+    if (!list.some((s) => s.key === currentSubject)) currentSubject = 'kokugo';
+    list.forEach((s) => {
       const b = document.createElement('button');
-      b.className = 'rank-tab';
+      b.className = 'rank-tab' + (s.isEvent ? ' rank-tab-event' : '');
       b.style.setProperty('--c', s.color);
       b.textContent = s.label;
+      if (s.isEvent) {
+        const tag = document.createElement('span');
+        tag.className = 'rank-tab-tag';
+        tag.textContent = '期間限定';
+        b.appendChild(tag);
+      }
       b.dataset.key = s.key;
       b.addEventListener('click', () => {
         Sound.play('tap');
@@ -73,7 +84,7 @@
   }
 
   function open() {
-    if (!$('rank-tabs').children.length) buildTabs();
+    buildTabs(); // イベントが始まった・終わったときのために、毎回作りなおす
     show(currentSubject);
   }
 
