@@ -1,0 +1,634 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "players": {
+      ".read": "auth != null && auth.token.email === 'sensei@example.com'",
+      ".indexOn": [
+        "totalPoints"
+      ],
+      "$key": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.token.email === 'sensei@example.com' || (newData.exists() && root.child('devices').child($key).child(auth.uid).exists()))",
+        ".validate": "newData.hasChildren(['name', 'totalPoints']) && $key.length <= 40",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+        },
+        "avatar": {
+          ".validate": "newData.hasChildren(['face', 'skin', 'eyes', 'brows', 'nose', 'mouth', 'hair', 'hairColor'])",
+          "$part": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 20"
+          }
+        },
+        "equipped": {
+          "head": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "face": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "totalPoints": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000 && ((!data.exists() && newData.val() <= 1500) || (data.exists() && newData.val() <= data.val() + 1500 && newData.val() >= data.val() - 5000 && (newData.val() <= data.val() || (!data.parent().child('pointsAt').exists() || newData.parent().child('pointsAt').val() - data.parent().child('pointsAt').val() >= 30000))))"
+        },
+        "accessories": {
+          "$id": {
+            ".validate": "newData.val() === true && $id.length <= 20"
+          }
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "eventPoints": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000 && ((!data.exists() && newData.val() <= 1500) || (data.exists() && newData.val() <= data.val() + 1500 && newData.val() >= data.val() - 5000 && (newData.val() <= data.val() || (!data.parent().child('pointsAt').exists() || newData.parent().child('pointsAt').val() - data.parent().child('pointsAt').val() >= 30000))))"
+        },
+        "skins": {
+          "$id": {
+            ".validate": "newData.val() === true && $id.length <= 20"
+          }
+        },
+        "skin": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "pointsAt": {
+          ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now - 120000 && newData.val() <= now + 120000))"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "secrets": {
+      "$key": {
+        ".write": "auth != null && $key.length <= 40 && ((!data.exists() && newData.isString() && newData.val().matches(/^[0-9]{4}$/)) || (auth.token.email === 'sensei@example.com' && !newData.exists()))"
+      }
+    },
+    "locks": {
+      ".read": "auth != null && auth.token.email === 'sensei@example.com'",
+      "$key": {
+        ".read": "auth != null",
+        ".write": "auth != null && $key.length <= 40 && ((!data.exists() && newData.val() === true && newData.parent().parent().child('secrets').child($key).exists()) || (auth.token.email === 'sensei@example.com' && !newData.exists()))"
+      }
+    },
+    "devices": {
+      "$key": {
+        ".write": "auth != null && auth.token.email === 'sensei@example.com' && !newData.exists()",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.val() === newData.parent().parent().parent().child('secrets').child($key).val()"
+        }
+      }
+    },
+    "rankings": {
+      ".read": "auth != null",
+      "$subject": {
+        ".indexOn": [
+          "best"
+        ],
+        ".validate": "$subject === 'kokugo' || $subject === 'sansu' || $subject === 'shakai' || $subject === 'rika' || $subject === 'all' || $subject === 'history'",
+        "$key": {
+          ".write": "auth != null && (auth.token.email === 'sensei@example.com' || (newData.exists() && root.child('devices').child($key).child(auth.uid).exists()))",
+          ".validate": "newData.hasChildren(['name', 'best']) && $key.length <= 40 && (!data.exists() || newData.child('best').val() >= data.child('best').val())",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+          },
+          "best": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1500"
+          },
+          "avatar": {
+            "$part": {
+              ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || $part === 'equipped' || $part === 'skin'"
+            },
+            "equipped": {
+              "head": {
+                ".validate": "newData.isString() && newData.val().length <= 20"
+              },
+              "face": {
+                ".validate": "newData.isString() && newData.val().length <= 20"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "skin": {
+              ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || (newData.isString() && newData.val().length <= 20)"
+            }
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "rooms": {
+      ".read": "auth != null && (auth.token.email === 'sensei@example.com' || (query.orderByChild === 'createdAt' && query.endAt <= now - 10800000))",
+      ".indexOn": [
+        "createdAt"
+      ],
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (newData.exists() || auth.token.email === 'sensei@example.com' || !data.child('players').exists() || data.child('createdAt').val() < now - 10800000)",
+        ".validate": "$code.matches(/^[0-9]{4}$/) && newData.hasChildren(['hostUid', 'createdAt', 'status'])",
+        "hostUid": {
+          ".validate": "newData.isString() && newData.val().length <= 128"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "status": {
+          ".validate": "newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'finished'"
+        },
+        "finishedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "game": {
+          ".validate": "newData.isNumber()"
+        },
+        "settings": {
+          "subject": {
+            ".validate": "newData.val() === 'kokugo' || newData.val() === 'sansu' || newData.val() === 'shakai' || newData.val() === 'rika' || newData.val() === 'rekishi' || newData.val() === 'all'"
+          },
+          "target": {
+            ".validate": "newData.isNumber() && newData.val() >= 3 && newData.val() <= 10"
+          },
+          "speed": {
+            ".validate": "newData.val() === 'slow' || newData.val() === 'normal' || newData.val() === 'fast'"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "qids": {
+          "$i": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          }
+        },
+        "players": {
+          "$uid": {
+            ".validate": "newData.hasChildren(['name', 'joinedAt']) && $uid.length <= 128",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+            },
+            "avatar": {
+              "$part": {
+                ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || $part === 'equipped' || $part === 'skin'"
+              },
+              "equipped": {
+                "head": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "face": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              },
+              "skin": {
+                ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || (newData.isString() && newData.val().length <= 20)"
+              }
+            },
+            "score": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+            },
+            "correct": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "buzzSum": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "buzzCount": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "joinedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "online": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "current": {
+          "index": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "questionId": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "phase": {
+            ".validate": "newData.val() === 'reading' || newData.val() === 'answering' || newData.val() === 'reveal'"
+          },
+          "startAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "fromChar": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "revealAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "buzzer": {
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length <= 128"
+            },
+            "charIndex": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "at": {
+              ".validate": "newData.isNumber()"
+            },
+            "deadline": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "lockedOut": {
+            "$uid": {
+              ".validate": "newData.isBoolean() && $uid.length <= 128"
+            }
+          },
+          "miss": {
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length <= 128"
+            },
+            "input": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "charIndex": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "result": {
+            "kind": {
+              ".validate": "newData.val() === 'correct' || newData.val() === 'timeup' || newData.val() === 'allwrong'"
+            },
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length <= 128"
+            },
+            "input": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "charIndex": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "stamps": {
+          "$id": {
+            ".validate": "newData.hasChildren(['uid', 'stampId', 'at'])",
+            "uid": {
+              ".validate": "newData.isString() && newData.val().length <= 128"
+            },
+            "stampId": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 8"
+            },
+            "at": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "g5": {
+      "players": {
+        ".read": "auth != null && auth.token.email === 'sensei@example.com'",
+        ".indexOn": [
+          "totalPoints"
+        ],
+        "$key": {
+          ".read": "auth != null",
+          ".write": "auth != null && (auth.token.email === 'sensei@example.com' || (newData.exists() && root.child('g5').child('devices').child($key).child(auth.uid).exists()))",
+          ".validate": "newData.hasChildren(['name', 'totalPoints']) && $key.length <= 40",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+          },
+          "avatar": {
+            ".validate": "newData.hasChildren(['face', 'skin', 'eyes', 'brows', 'nose', 'mouth', 'hair', 'hairColor'])",
+            "$part": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 20"
+            }
+          },
+          "equipped": {
+            "head": {
+              ".validate": "newData.isString() && newData.val().length <= 20"
+            },
+            "face": {
+              ".validate": "newData.isString() && newData.val().length <= 20"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "totalPoints": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000 && ((!data.exists() && newData.val() <= 1500) || (data.exists() && newData.val() <= data.val() + 1500 && newData.val() >= data.val() - 5000 && (newData.val() <= data.val() || (!data.parent().child('pointsAt').exists() || newData.parent().child('pointsAt').val() - data.parent().child('pointsAt').val() >= 30000))))"
+          },
+          "accessories": {
+            "$id": {
+              ".validate": "newData.val() === true && $id.length <= 20"
+            }
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "eventPoints": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000 && ((!data.exists() && newData.val() <= 1500) || (data.exists() && newData.val() <= data.val() + 1500 && newData.val() >= data.val() - 5000 && (newData.val() <= data.val() || (!data.parent().child('pointsAt').exists() || newData.parent().child('pointsAt').val() - data.parent().child('pointsAt').val() >= 30000))))"
+          },
+          "skins": {
+            "$id": {
+              ".validate": "newData.val() === true && $id.length <= 20"
+            }
+          },
+          "skin": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "pointsAt": {
+            ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now - 120000 && newData.val() <= now + 120000))"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "secrets": {
+        "$key": {
+          ".write": "auth != null && $key.length <= 40 && ((!data.exists() && newData.isString() && newData.val().matches(/^[0-9]{4}$/)) || (auth.token.email === 'sensei@example.com' && !newData.exists()))"
+        }
+      },
+      "locks": {
+        ".read": "auth != null && auth.token.email === 'sensei@example.com'",
+        "$key": {
+          ".read": "auth != null",
+          ".write": "auth != null && $key.length <= 40 && ((!data.exists() && newData.val() === true && newData.parent().parent().child('secrets').child($key).exists()) || (auth.token.email === 'sensei@example.com' && !newData.exists()))"
+        }
+      },
+      "devices": {
+        "$key": {
+          ".write": "auth != null && auth.token.email === 'sensei@example.com' && !newData.exists()",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.val() === newData.parent().parent().parent().child('secrets').child($key).val()"
+          }
+        }
+      },
+      "rankings": {
+        ".read": "auth != null",
+        "$subject": {
+          ".indexOn": [
+            "best"
+          ],
+          ".validate": "$subject === 'kokugo' || $subject === 'sansu' || $subject === 'shakai' || $subject === 'rika' || $subject === 'all' || $subject === 'joushiki'",
+          "$key": {
+            ".write": "auth != null && (auth.token.email === 'sensei@example.com' || (newData.exists() && root.child('g5').child('devices').child($key).child(auth.uid).exists()))",
+            ".validate": "newData.hasChildren(['name', 'best']) && $key.length <= 40 && (!data.exists() || newData.child('best').val() >= data.child('best').val())",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+            },
+            "best": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1500"
+            },
+            "avatar": {
+              "$part": {
+                ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || $part === 'equipped' || $part === 'skin'"
+              },
+              "equipped": {
+                "head": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "face": {
+                  ".validate": "newData.isString() && newData.val().length <= 20"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              },
+              "skin": {
+                ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || (newData.isString() && newData.val().length <= 20)"
+              }
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "rooms": {
+        ".read": "auth != null && (auth.token.email === 'sensei@example.com' || (query.orderByChild === 'createdAt' && query.endAt <= now - 10800000))",
+        ".indexOn": [
+          "createdAt"
+        ],
+        "$code": {
+          ".read": "auth != null",
+          ".write": "auth != null && (newData.exists() || auth.token.email === 'sensei@example.com' || !data.child('players').exists() || data.child('createdAt').val() < now - 10800000)",
+          ".validate": "$code.matches(/^[0-9]{4}$/) && newData.hasChildren(['hostUid', 'createdAt', 'status'])",
+          "hostUid": {
+            ".validate": "newData.isString() && newData.val().length <= 128"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "status": {
+            ".validate": "newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'finished'"
+          },
+          "finishedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "game": {
+            ".validate": "newData.isNumber()"
+          },
+          "settings": {
+            "subject": {
+              ".validate": "newData.val() === 'kokugo' || newData.val() === 'sansu' || newData.val() === 'shakai' || newData.val() === 'rika' || newData.val() === 'all'"
+            },
+            "target": {
+              ".validate": "newData.isNumber() && newData.val() >= 3 && newData.val() <= 10"
+            },
+            "speed": {
+              ".validate": "newData.val() === 'slow' || newData.val() === 'normal' || newData.val() === 'fast'"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "qids": {
+            "$i": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            }
+          },
+          "players": {
+            "$uid": {
+              ".validate": "newData.hasChildren(['name', 'joinedAt']) && $uid.length <= 128",
+              "name": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10"
+              },
+              "avatar": {
+                "$part": {
+                  ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || $part === 'equipped' || $part === 'skin'"
+                },
+                "equipped": {
+                  "head": {
+                    ".validate": "newData.isString() && newData.val().length <= 20"
+                  },
+                  "face": {
+                    ".validate": "newData.isString() && newData.val().length <= 20"
+                  },
+                  "$other": {
+                    ".validate": false
+                  }
+                },
+                "skin": {
+                  ".validate": "(newData.isNumber() && newData.val() >= 0 && newData.val() < 20) || (newData.isString() && newData.val().length <= 20)"
+                }
+              },
+              "score": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+              },
+              "correct": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "buzzSum": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "buzzCount": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "joinedAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "online": {
+                ".validate": "newData.isBoolean()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "current": {
+            "index": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "questionId": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "phase": {
+              ".validate": "newData.val() === 'reading' || newData.val() === 'answering' || newData.val() === 'reveal'"
+            },
+            "startAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "fromChar": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "revealAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "buzzer": {
+              "uid": {
+                ".validate": "newData.isString() && newData.val().length <= 128"
+              },
+              "charIndex": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "at": {
+                ".validate": "newData.isNumber()"
+              },
+              "deadline": {
+                ".validate": "newData.isNumber()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "lockedOut": {
+              "$uid": {
+                ".validate": "newData.isBoolean() && $uid.length <= 128"
+              }
+            },
+            "miss": {
+              "uid": {
+                ".validate": "newData.isString() && newData.val().length <= 128"
+              },
+              "input": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "charIndex": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "result": {
+              "kind": {
+                ".validate": "newData.val() === 'correct' || newData.val() === 'timeup' || newData.val() === 'allwrong'"
+              },
+              "uid": {
+                ".validate": "newData.isString() && newData.val().length <= 128"
+              },
+              "input": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "charIndex": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "$other": {
+                ".validate": false
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "stamps": {
+            "$id": {
+              ".validate": "newData.hasChildren(['uid', 'stampId', 'at'])",
+              "uid": {
+                ".validate": "newData.isString() && newData.val().length <= 128"
+              },
+              "stampId": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 8"
+              },
+              "at": {
+                ".validate": "newData.isNumber()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#fff4dc">
+  <title>先生用画面｜早押しクイズ 5年</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=27">
+  <link rel="stylesheet" href="css/admin.css?v=27">
+</head>
+<body>
+  <div id="app" class="admin-app">
+    <div class="admin-wrap">
+      <header class="admin-head">
+        <div class="admin-title">先生用画面</div>
+        <div class="admin-sub">早押しクイズ（5年生用）の 記録の かんり</div>
+      </header>
+
+      <!-- 先生のログイン -->
+      <section id="lock" class="admin-card admin-lock">
+        <p class="admin-lead">先生の パスワードで ログインしてください</p>
+        <div class="admin-email">ログインする名前：<b id="teacher-email"></b></div>
+        <input id="pass-input" class="admin-pass" type="password" autocomplete="current-password" placeholder="パスワード" aria-label="パスワード">
+        <p id="pass-error" class="name-error" hidden></p>
+        <button id="btn-unlock" class="btn btn-primary">ログイン</button>
+        <p class="admin-note">先生のアカウントは、Firebase の Authentication で作ります（くわしくは docs/firebase-setup.md）。<br>記録を消したり、全員の名前を見たりできるのは、このアカウントだけです。</p>
+      </section>
+
+      <!-- かんり -->
+      <section id="panel" hidden>
+        <nav class="admin-tabs" role="tablist">
+          <button class="admin-tab active" data-pane="ranking" role="tab">ランキング</button>
+          <button class="admin-tab" data-pane="players" role="tab">プレイヤー</button>
+          <button class="admin-tab" data-pane="rooms" role="tab">対戦の部屋</button>
+          <button id="btn-reload" class="btn btn-small btn-ghost admin-reload">↻ 読みなおす</button>
+          <button id="btn-logout" class="btn btn-small btn-ghost">ログアウト</button>
+        </nav>
+
+        <!-- ランキング -->
+        <div id="pane-ranking" class="admin-card admin-pane">
+          <div id="rank-subjects" class="rank-tabs"></div>
+          <div class="admin-bar">
+            <span id="rank-count" class="admin-count"></span>
+            <button id="btn-rank-clear" class="btn btn-small btn-danger">この教科を ぜんぶ消す</button>
+          </div>
+          <div id="rank-rows" class="admin-rows"></div>
+        </div>
+
+        <!-- プレイヤー -->
+        <div id="pane-players" class="admin-card admin-pane" hidden>
+          <p class="admin-help">名前を消すと、その人の ためた点・アクセサリー・ランキングの記録も 消えます。<br>ふさわしくない名前の 対応などに 使ってください。</p>
+          <div class="admin-bar">
+            <input id="player-search" class="admin-search" type="search" placeholder="名前で さがす" autocomplete="off">
+            <span id="player-count" class="admin-count"></span>
+          </div>
+          <div id="player-rows" class="admin-rows"></div>
+        </div>
+
+        <!-- 部屋 -->
+        <div id="pane-rooms" class="admin-card admin-pane" hidden>
+          <p class="admin-help">対戦の部屋は、3時間たつか だれもいなくなると、次に部屋を作るときに 自動で消えます。<br>ここでは 手で消せます（遊んでいる とちゅうの部屋も 消えます）。</p>
+          <div class="admin-bar">
+            <span id="room-count" class="admin-count"></span>
+            <button id="btn-rooms-clear" class="btn btn-small btn-danger">部屋を ぜんぶ消す</button>
+          </div>
+          <div id="room-rows" class="admin-rows"></div>
+        </div>
+      </section>
+
+      <p id="admin-status" class="admin-status" hidden></p>
+      <a class="admin-back" href="./">← 早押しクイズ（5年）へ もどる</a>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js?v=27"></script>
+  <script src="js/avatar.js?v=27"></script>
+  <script src="js/skins.js?v=27"></script>
+  <script src="js/store.js?v=27"></script>
+  <script src="js/questions.js?v=27"></script>
+  <script src="js/admin.js?v=27"></script>
+</body>
+</html>
